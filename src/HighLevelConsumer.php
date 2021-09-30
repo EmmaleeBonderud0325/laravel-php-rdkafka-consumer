@@ -15,7 +15,7 @@ class HighLevelConsumer
 
     public function __construct(
         protected string $topicName, 
-        ?string $consumerName, 
+        ?string $consumerName = null, 
         protected int $consumeTimeout = 20000,
     )
     {
