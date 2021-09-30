@@ -40,10 +40,10 @@ Action handler example:
 ```php
 class SendConfirmationEmailAction
 {
-    public function execute(Message $message): void
-    {
-        // var_dump($message->payload);
-    }
+   public function execute(Message $message): void
+   {
+      // var_dump($message->payload);
+   }
 }
 ```
 
@@ -51,19 +51,21 @@ Job handler example:
 
 ```php
 
-use Greensight\LaravelPhpRdKafkaConsumer\AbstractKafkaJob;
+use RdKafka\Message;
 
-class ConsumeMessageJob extends AbstractKafkaJob
+class ConsumeMessageJob
 {
-    public function handle(): void
-    {
-        // var_dump($this->message->payload);
-    }
+   public function __construct(protected Message $message)
+   {
+   }
+
+   public function handle(): void
+   {
+      // var_dump($this->message->payload);
+   }
 }
 
 ```
-
-You do not have to extend `AbstractKafkaJob`, it's optional.
 
 ## Testing
 
