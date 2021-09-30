@@ -50,7 +50,7 @@ class KafkaConsumeCommand extends Command
             return 1;
         }
 
-        $consumeTimeout = $processorData['consume_timeout'] ?? 5000;
+        $consumeTimeout = $processorData['consume_timeout'] ?? 20000;
 
         $supportedProcessorTypes = ['action', 'job'];
         $processorType = $processorData['type'] ?? 'action';

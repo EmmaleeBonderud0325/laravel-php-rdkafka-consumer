@@ -4,7 +4,6 @@ namespace Greensight\LaravelPhpRdKafkaConsumer;
 
 use Greensight\LaravelPhpRdKafka\KafkaManager;
 use Greensight\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerException;
-use Greensight\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerTimedOutException;
 use RdKafka\Exception as RdKafkaException;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
@@ -17,7 +16,7 @@ class HighLevelConsumer
     public function __construct(
         protected string $topicName, 
         ?string $consumerName, 
-        protected int $consumeTimeout = 5000,
+        protected int $consumeTimeout = 20000,
     )
     {
         $manager = resolve(KafkaManager::class);
@@ -37,13 +36,16 @@ class HighLevelConsumer
             $message = $this->consumer->consume($this->consumeTimeout);
 
             switch ($message->err) {
+
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
                     $this->executeProcessor($processorClassName, $processorType, $processorQueue, $message);
                     $this->consumer->commitAsync($message);
                     break;
 
                 case RD_KAFKA_RESP_ERR__TIMED_OUT:
-                    throw new KafkaConsumerTimedOutException('Kafka error: ' . $message->errstr());
+                    // This also happens when there is no new messages in the topic after the specified timeout: https://github.com/arnaud-lb/php-rdkafka/issues/343
+                    // We cannot differentiate broker timeout, poll timeout and eof timeout and are forced to keep on polling as a result.
+                    // When kafka broker goes back online the connection will mostly likely be reestablished.
                     break;
 
                 default:
