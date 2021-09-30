@@ -18,7 +18,6 @@ class HighLevelConsumer
         protected string $topicName, 
         string $consumerName, 
         protected int $consumeTimeout,
-        protected bool $exitByTimeout, 
     )
     {
         $this->consumer = resolve(KafkaManager::class)->consumer($consumerName);
@@ -43,9 +42,7 @@ class HighLevelConsumer
                     break;
 
                 case RD_KAFKA_RESP_ERR__TIMED_OUT:
-                    if ($this->exitByTimeout) {
-                        throw new KafkaConsumerTimedOutException('Kafka error: ' . $message->errstr());
-                    }
+                    throw new KafkaConsumerTimedOutException('Kafka error: ' . $message->errstr());
                     break;
 
                 default:

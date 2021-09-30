@@ -11,7 +11,7 @@ class KafkaConsumeCommand extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'kafka:consume {topic} {consumer=default} {--exit-by-timeout}';
+    protected $signature = 'kafka:consume {topic} {consumer=default}';
 
     /**
      * The console command description.
@@ -25,7 +25,6 @@ class KafkaConsumeCommand extends Command
     {
         $topic = $this->argument('topic');
         $consumer = $this->argument('consumer');
-        $exitByTimeout = (bool) $this->option('exit-by-timeout');
         $availableConsumers = array_keys(config('kafka.consumers', []));
 
         if (!in_array($consumer, $availableConsumers)) {
@@ -65,7 +64,7 @@ class KafkaConsumeCommand extends Command
 
         $this->info("Start listenning to topic: \"$topic\", consumer \"$consumer\"");
         try {
-            $kafkaTopicListener = new HighLevelConsumer($topic, $consumer, $consumeTimeout, $exitByTimeout);
+            $kafkaTopicListener = new HighLevelConsumer($topic, $consumer, $consumeTimeout);
             $kafkaTopicListener->listen($processorClassName, $processorType, $processorQueue);
         } catch (Throwable $e) {
             $this->error('An error occurred while listening to the topic: '. $e->getMessage(). ' '. $e->getFile() . '::' . $e->getLine());
