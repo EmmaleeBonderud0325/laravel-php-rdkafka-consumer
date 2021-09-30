@@ -66,8 +66,7 @@ class KafkaConsumeCommand extends Command
             $kafkaTopicListener = new HighLevelConsumer($topic, $consumer, $consumeTimeout, $exitByTimeout);
             $kafkaTopicListener->listen($handler, $type);
         } catch (Throwable $e) {
-            $this->error('An error occurred while listening to the topic');
-            $this->line($e->getMessage() . ' '. $e->getFile() . '::' . $e->getLine());
+            $this->error('An error occurred while listening to the topic: '. $e->getMessage(). ' '. $e->getFile() . '::' . $e->getLine());
 
             return 1;
         }

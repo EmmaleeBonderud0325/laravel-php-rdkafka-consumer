@@ -4,6 +4,7 @@ namespace Greensight\LaravelPhpRdKafkaConsumer;
 
 use Greensight\LaravelPhpRdKafka\KafkaManager;
 use Greensight\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerException;
+use Greensight\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerTimedOutException;
 use RdKafka\Exception as RdKafkaException;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
@@ -37,14 +38,13 @@ class HighLevelConsumer
 
             switch ($message->err) {
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
-                    // send new handler instance to queue
                     $this->executeHandler($handlerClass, $type, $message);
                     $this->consumer->commitAsync($message);
                     break;
 
                 case RD_KAFKA_RESP_ERR__TIMED_OUT:
                     if ($this->exitByTimeout) {
-                        return;
+                        throw new KafkaConsumerTimedOutException('Kafka error: ' . $message->errstr());
                     }
                     break;
 
