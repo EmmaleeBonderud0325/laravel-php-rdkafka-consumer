@@ -20,7 +20,7 @@ Now go to `config/kafka-consumer.php` and add processors there.
 
 ## Usage
 
-The package provides `php artisan kafka:consume {topic} {consumer=default} {--exit-by-timeout}` command that executes the first processor that matches given topic and consumer name. Consumer name is taken from greensight/laravel-phprdkafka config file.
+The package provides `php artisan kafka:consume {topic} {consumer=default}` command that executes the first processor that matches given topic and consumer name. Consumer name is taken from greensight/laravel-phprdkafka config file.
 
 Processors in config have the following configuration options:
 
