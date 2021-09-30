@@ -16,11 +16,12 @@ class HighLevelConsumer
 
     public function __construct(
         protected string $topicName, 
-        string $consumerName, 
-        protected int $consumeTimeout,
+        ?string $consumerName, 
+        protected int $consumeTimeout = 5000,
     )
     {
-        $this->consumer = resolve(KafkaManager::class)->consumer($consumerName);
+        $manager = resolve(KafkaManager::class);
+        $this->producer =  is_null($consumerName) ? $manager->consumer() : $manager->consumer($consumerName);
     }
 
     /**
