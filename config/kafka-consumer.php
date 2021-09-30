@@ -15,7 +15,7 @@ return [
          | Here you may specify which greensight/laravel-phprdkafka consumer should be handled by this processor.
          | Processor handles all consumers by default.
          */
-         'consumer' => 'default', // optional, processor fits all consumers by default
+         'consumer' => 'default',
 
          /*
          | Optional, defaults to `action`
@@ -39,7 +39,7 @@ return [
          |  - `true` - stream message to Laravel's default queue;
          |  - `<your-favorite-queue-name-as-string>` - stream message to this queue;
          */
-         'queue' => false, // optional `true/false/string` to specify a Laravel's queue to stream message to. Defaults to `false`.
+         'queue' => false,
 
          /*
          | Optional, defaults to 5000.
