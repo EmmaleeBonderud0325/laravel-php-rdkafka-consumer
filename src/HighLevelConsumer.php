@@ -29,7 +29,7 @@ class HighLevelConsumer
      * @throws RdKafkaException
      * @throws Throwable
      */
-    public function listen(string $handlerClass, string $type): void
+    public function listen(string $processorClass, string $type): void
     {
         $this->consumer->subscribe([ $this->topicName ]);
 
@@ -38,7 +38,7 @@ class HighLevelConsumer
 
             switch ($message->err) {
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
-                    $this->executeHandler($handlerClass, $type, $message);
+                    $this->executeProcessor($processorClass, $type, $message);
                     $this->consumer->commitAsync($message);
                     break;
 
@@ -54,12 +54,12 @@ class HighLevelConsumer
         }
     }
 
-    protected function executeHandler(string $handlerClass, string $type, Message $message): void
+    protected function executeProcessor(string $processorClass, string $type, Message $message): void
     {
         if ($type === 'job') {
-            dispatch(new $handlerClass($message));
+            dispatch(new $processorClass($message));
         } elseif ($type === 'action') {
-            resolve($handlerClass)->execute($message);
+            resolve($processorClass)->execute($message);
         }
     }
 }

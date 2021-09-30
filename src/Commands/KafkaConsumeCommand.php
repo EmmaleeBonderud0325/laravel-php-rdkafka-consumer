@@ -35,28 +35,28 @@ class KafkaConsumeCommand extends Command
             return 1;
         }
 
-        $handlerData = $this->findMatchedHandler($topic, $consumer);
-        if (is_null($handlerData)) {
-            $this->error("Handler for topic \"$topic\" and consumer \"$consumer\" is not found");
-            $this->line('Handlers are set in /config/kafka-consumers.php');
+        $processorData = $this->findMatchedProcessor($topic, $consumer);
+        if (is_null($processorData)) {
+            $this->error("Processor for topic \"$topic\" and consumer \"$consumer\" is not found");
+            $this->line('Processors are set in /config/kafka-consumers.php');
 
             return 1;
         }
 
-        $handler = $handlerData['class'];
-        if (!class_exists($handler)) {
-            $this->error("Handler class \"$handler\" is not found");
-            $this->line('Handlers are set in /config/kafka-consumers.php');
+        $processor = $processorData['class'];
+        if (!class_exists($processor)) {
+            $this->error("Processor class \"$processor\" is not found");
+            $this->line('Processors are set in /config/kafka-consumers.php');
 
             return 1;
         }
 
-        $consumeTimeout = $handlerData['consume_timeout'] ?? 5000;
+        $consumeTimeout = $processorData['consume_timeout'] ?? 5000;
 
-        $allowedHandlerTypes = ['action', 'job'];
-        $type = $handlerData['type'] ?? 'action';
-        if (!in_array($type, $allowedHandlerTypes)) {
-            $this->error("Invalid handler type \"$type\", allowed types are: " . implode(',', $allowedHandlerTypes));
+        $allowedProcessorTypes = ['action', 'job'];
+        $type = $processorData['type'] ?? 'action';
+        if (!in_array($type, $allowedProcessorTypes)) {
+            $this->error("Invalid processor type \"$type\", allowed types are: " . implode(',', $allowedProcessorTypes));
 
             return 1;
         }
@@ -64,7 +64,7 @@ class KafkaConsumeCommand extends Command
         $this->info("Start listenning to topic: \"$topic\", consumer \"$consumer\"");
         try {
             $kafkaTopicListener = new HighLevelConsumer($topic, $consumer, $consumeTimeout, $exitByTimeout);
-            $kafkaTopicListener->listen($handler, $type);
+            $kafkaTopicListener->listen($processor, $type);
         } catch (Throwable $e) {
             $this->error('An error occurred while listening to the topic: '. $e->getMessage(). ' '. $e->getFile() . '::' . $e->getLine());
 
@@ -74,14 +74,14 @@ class KafkaConsumeCommand extends Command
         return 0;
     }
 
-    protected function findMatchedHandler(string $topic, string $consumer): ?array
+    protected function findMatchedProcessor(string $topic, string $consumer): ?array
     {
-        foreach (config('kafka-consumer.handlers', []) as $handler) {
+        foreach (config('kafka-consumer.processors', []) as $processor) {
             if (
-                (empty($handler['topic']) || $handler['topic'] === $topic)
-                && (empty($handler['consumer']) || $handler['consumer'] === $consumer)
+                (empty($processor['topic']) || $processor['topic'] === $topic)
+                && (empty($processor['consumer']) || $processor['consumer'] === $consumer)
                 ) {
-                return $handler;
+                return $processor;
             }
         }
 
