@@ -29,7 +29,7 @@ class HighLevelConsumer
      * @throws RdKafkaException
      * @throws Throwable
      */
-    public function listen(string $processorClass, string $type): void
+    public function listen(string $processorClassName, string $processorType, string|bool $processorQueue): void
     {
         $this->consumer->subscribe([ $this->topicName ]);
 
@@ -38,7 +38,7 @@ class HighLevelConsumer
 
             switch ($message->err) {
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
-                    $this->executeProcessor($processorClass, $type, $message);
+                    $this->executeProcessor($processorClassName, $processorType, $processorQueue, $message);
                     $this->consumer->commitAsync($message);
                     break;
 
@@ -54,12 +54,29 @@ class HighLevelConsumer
         }
     }
 
-    protected function executeProcessor(string $processorClass, string $type, Message $message): void
+    protected function executeProcessor(string $className, string $type, string|bool $queue, Message $message): void
+    {
+        $queue 
+            ? $this->executeQueueableProcessor($className, $type, $queue, $message) 
+            : $this->executeSyncProcessor($className, $type, $message);
+    }
+
+    protected function executeSyncProcessor(string $className, string $type, Message $message): void
     {
         if ($type === 'job') {
-            dispatch(new $processorClass($message));
+            $className::dispatchSync($message);
         } elseif ($type === 'action') {
-            resolve($processorClass)->execute($message);
+            resolve($className)->execute($message);
+        }
+    }
+
+    protected function executeQueueableProcessor(string $className, string $type, string|bool $queue, Message $message): void
+    {
+        if ($type === 'job') {
+            is_string($queue) ? $className::dispatch($message)->onQueue($queue) : $className::dispatch($message);
+        } elseif ($type === 'action') {
+            $processor = resolve($className);
+            is_string($queue) ? $processor->onQueue($queue)->execute($message) : $processor->execute($message);
         }
     }
 }

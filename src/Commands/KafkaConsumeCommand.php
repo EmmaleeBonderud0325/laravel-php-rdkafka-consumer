@@ -43,9 +43,9 @@ class KafkaConsumeCommand extends Command
             return 1;
         }
 
-        $processor = $processorData['class'];
-        if (!class_exists($processor)) {
-            $this->error("Processor class \"$processor\" is not found");
+        $processorClassName = $processorData['class'];
+        if (!class_exists($processorClassName)) {
+            $this->error("Processor class \"$processorClassName\" is not found");
             $this->line('Processors are set in /config/kafka-consumers.php');
 
             return 1;
@@ -53,18 +53,20 @@ class KafkaConsumeCommand extends Command
 
         $consumeTimeout = $processorData['consume_timeout'] ?? 5000;
 
-        $allowedProcessorTypes = ['action', 'job'];
-        $type = $processorData['type'] ?? 'action';
-        if (!in_array($type, $allowedProcessorTypes)) {
-            $this->error("Invalid processor type \"$type\", allowed types are: " . implode(',', $allowedProcessorTypes));
+        $supportedProcessorTypes = ['action', 'job'];
+        $processorType = $processorData['type'] ?? 'action';
+        if (!in_array($processorType, $supportedProcessorTypes)) {
+            $this->error("Invalid processor type \"$processorType\", supported types are: " . implode(',', $supportedProcessorTypes));
 
             return 1;
         }
 
+        $processorQueue = $processorData['queue'] ?? false;
+
         $this->info("Start listenning to topic: \"$topic\", consumer \"$consumer\"");
         try {
             $kafkaTopicListener = new HighLevelConsumer($topic, $consumer, $consumeTimeout, $exitByTimeout);
-            $kafkaTopicListener->listen($processor, $type);
+            $kafkaTopicListener->listen($processorClassName, $processorType, $processorQueue);
         } catch (Throwable $e) {
             $this->error('An error occurred while listening to the topic: '. $e->getMessage(). ' '. $e->getFile() . '::' . $e->getLine());
 
