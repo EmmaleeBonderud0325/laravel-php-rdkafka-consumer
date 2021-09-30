@@ -21,7 +21,7 @@ class HighLevelConsumer
     )
     {
         $manager = resolve(KafkaManager::class);
-        $this->producer =  is_null($consumerName) ? $manager->consumer() : $manager->consumer($consumerName);
+        $this->consumer =  is_null($consumerName) ? $manager->consumer() : $manager->consumer($consumerName);
     }
 
     /**
