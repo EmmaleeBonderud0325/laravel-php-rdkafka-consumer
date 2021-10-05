@@ -1,6 +1,6 @@
 <?php
 
-namespace Greensight\LaravelPhpRdKafkaConsumer\Exceptions;
+namespace Ensi\LaravelPhpRdKafkaConsumer\Exceptions;
 
 use Exception;
 

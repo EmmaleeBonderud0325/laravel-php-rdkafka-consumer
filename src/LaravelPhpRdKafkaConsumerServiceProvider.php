@@ -1,8 +1,8 @@
 <?php
 
-namespace Greensight\LaravelPhpRdKafkaConsumer;
+namespace Ensi\LaravelPhpRdKafkaConsumer;
 
-use Greensight\LaravelPhpRdKafkaConsumer\Commands\KafkaConsumeCommand;
+use Ensi\LaravelPhpRdKafkaConsumer\Commands\KafkaConsumeCommand;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelPhpRdKafkaConsumerServiceProvider extends ServiceProvider

@@ -12,7 +12,7 @@ return [
 
          /*
          | Optional, defaults to `null`.
-         | Here you may specify which greensight/laravel-phprdkafka consumer should be handled by this processor.
+         | Here you may specify which ensi/laravel-phprdkafka consumer should be handled by this processor.
          | Processor handles all consumers by default.
          */
          'consumer' => 'default',

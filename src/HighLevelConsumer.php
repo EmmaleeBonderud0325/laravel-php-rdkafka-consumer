@@ -1,9 +1,9 @@
 <?php
 
-namespace Greensight\LaravelPhpRdKafkaConsumer;
+namespace Ensi\LaravelPhpRdKafkaConsumer;
 
-use Greensight\LaravelPhpRdKafka\KafkaManager;
-use Greensight\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerException;
+use Ensi\LaravelPhpRdKafka\KafkaManager;
+use Ensi\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerException;
 use RdKafka\Exception as RdKafkaException;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;

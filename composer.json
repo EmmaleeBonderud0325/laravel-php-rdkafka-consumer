@@ -1,24 +1,24 @@
 {
-    "name": "greensight/laravel-phprdkafka-consumer",
+    "name": "ensi/laravel-phprdkafka-consumer",
     "description": "Opiniated High Level consumer for laravel-phprdkafka",
     "keywords": [
-        "greensight",
+        "ensi",
         "laravel",
         "kafka"
     ],
-    "homepage": "https://github.com/greensight/laravel-phprdkafka-consumer",
+    "homepage": "https://github.com/ensi/laravel-phprdkafka-consumer",
     "license": "MIT",
     "authors": [
         {
             "name": "arrilot",
-            "email": "nekrasov@greensight.ru",
+            "email": "nekrasov@ensi.ru",
             "role": "Developer"
         }
     ],
     "require": {
         "php": "^8.0",
         "ext-rdkafka": "*",
-        "greensight/laravel-phprdkafka": "^0.1.4",
+        "ensi/laravel-phprdkafka": "^0.1.4",
         "illuminate/support": "^7 || ^8"
     },
     "require-dev": {
@@ -30,12 +30,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Greensight\\LaravelPhpRdKafkaConsumer\\": "src"
+            "Ensi\\LaravelPhpRdKafkaConsumer\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Greensight\\LaravelPhpRdKafkaConsumer\\Tests\\": "tests"
+            "Ensi\\LaravelPhpRdKafkaConsumer\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -48,7 +48,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Greensight\\LaravelPhpRdKafkaConsumer\\LaravelPhpRdKafkaConsumerServiceProvider"
+                "Ensi\\LaravelPhpRdKafkaConsumer\\LaravelPhpRdKafkaConsumerServiceProvider"
             ]
         }
     },

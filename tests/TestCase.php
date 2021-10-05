@@ -1,6 +1,6 @@
 <?php
 
-namespace Greensight\LaravelPhpRdKafkaConsumer\Tests;
+namespace Ensi\LaravelPhpRdKafkaConsumer\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
 

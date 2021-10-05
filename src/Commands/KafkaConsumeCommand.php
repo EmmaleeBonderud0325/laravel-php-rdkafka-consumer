@@ -1,8 +1,8 @@
 <?php
 
-namespace Greensight\LaravelPhpRdKafkaConsumer\Commands;
+namespace Ensi\LaravelPhpRdKafkaConsumer\Commands;
 
-use Greensight\LaravelPhpRdKafkaConsumer\HighLevelConsumer;
+use Ensi\LaravelPhpRdKafkaConsumer\HighLevelConsumer;
 use Throwable;
 use Illuminate\Console\Command;
 

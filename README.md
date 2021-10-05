@@ -1,26 +1,26 @@
 # Laravel PHP Rdkafka Consumer
 
-Opiniated High Level consumer for [greensight/laravel-phprdkafka](https://github.com/greensight/laravel-php-rdkafka)
+Opiniated High Level consumer for [ensi/laravel-phprdkafka](https://github.com/ensi/laravel-php-rdkafka)
 
 ## Installation
 
-Firstly, you have to install and configure [greensight/laravel-phprdkafka](https://github.com/greensight/laravel-php-rdkafka)
+Firstly, you have to install and configure [ensi/laravel-phprdkafka](https://github.com/ensi/laravel-php-rdkafka)
 
 Then,
 ```bash
-composer require greensight/laravel-phprdkafka-consumer
+composer require ensi/laravel-phprdkafka-consumer
 ```
 
 Publish the config file with:
 ```bash
-php artisan vendor:publish --provider="Greensight\LaravelPhpRdKafkaConsumer\LaravelPhpRdKafkaConsumerServiceProvider" --tag="kafka-consumer-config"
+php artisan vendor:publish --provider="Ensi\LaravelPhpRdKafkaConsumer\LaravelPhpRdKafkaConsumerServiceProvider" --tag="kafka-consumer-config"
 ```
 
 Now go to `config/kafka-consumer.php` and add processors there.
 
 ## Usage
 
-The package provides `php artisan kafka:consume {topic} {consumer=default}` command that executes the first processor that matches given topic and consumer name. Consumer name is taken from greensight/laravel-phprdkafka config file.
+The package provides `php artisan kafka:consume {topic} {consumer=default}` command that executes the first processor that matches given topic and consumer name. Consumer name is taken from ensi/laravel-phprdkafka config file.
 
 Processors in config have the following configuration options:
 
@@ -35,7 +35,7 @@ Processors in config have the following configuration options:
 
    /*
    | Optional, defaults to `null`.
-   | Here you may specify which greensight/laravel-phprdkafka consumer should be handled by this processor.
+   | Here you may specify which ensi/laravel-phprdkafka consumer should be handled by this processor.
    | Processor handles all consumers by default.
    */
    'consumer' => 'default',
