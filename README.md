@@ -79,6 +79,8 @@ Most of the time all tou need is a synchronous processor.
 A simple example of such processor:
 
 ```php
+use RdKafka\Message;
+
 class SendConfirmationEmailAction
 {
    public function execute(Message $message): void
