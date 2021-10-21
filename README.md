@@ -1,10 +1,10 @@
 # Laravel PHP Rdkafka Consumer
 
-Opiniated High Level consumer for [ensi/laravel-phprdkafka](https://github.com/ensi/laravel-php-rdkafka)
+Opiniated High Level consumer for [ensi/laravel-phprdkafka](https://github.com/ensi-platform/laravel-php-rdkafka)
 
 ## Installation
 
-Firstly, you have to install and configure [ensi/laravel-phprdkafka](https://github.com/ensi/laravel-php-rdkafka)
+Firstly, you have to install and configure [ensi/laravel-phprdkafka](https://github.com/ensi-platform/laravel-php-rdkafka)
 
 Then,
 ```bash
