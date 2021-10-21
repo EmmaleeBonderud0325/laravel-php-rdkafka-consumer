@@ -55,9 +55,7 @@ class HighLevelConsumer
                     throw new KafkaConsumerException('Kafka error: ' . $message->errstr());
             }
 
-            if ($this->shouldBeStopped(
-                $startTime, $eventsProcessed
-            )) {
+            if ($this->shouldBeStopped($startTime, $eventsProcessed)) {
                 break;
             }
         }
