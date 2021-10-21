@@ -16,7 +16,7 @@ class HighLevelConsumer
     public function __construct(
         protected string $topicName, 
         ?string $consumerName = null, 
-        protected int $consumeTimeout = 20000,
+        protected ConsumerOptions $options,
     )
     {
         $manager = resolve(KafkaManager::class);
@@ -32,14 +32,17 @@ class HighLevelConsumer
     {
         $this->consumer->subscribe([ $this->topicName ]);
 
+        [$startTime, $eventsProcessed] = [hrtime(true) / 1e9, 0];
+
         while (true) {
-            $message = $this->consumer->consume($this->consumeTimeout);
+            $message = $this->consumer->consume($this->options->consumeTimeout);
 
             switch ($message->err) {
 
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
                     $this->executeProcessor($processorClassName, $processorType, $processorQueue, $message);
                     $this->consumer->commitAsync($message);
+                    $eventsProcessed++;
                     break;
 
                 case RD_KAFKA_RESP_ERR__TIMED_OUT:
@@ -50,6 +53,12 @@ class HighLevelConsumer
 
                 default:
                     throw new KafkaConsumerException('Kafka error: ' . $message->errstr());
+            }
+
+            if ($this->shouldBeStopped(
+                $startTime, $eventsProcessed
+            )) {
+                break;
             }
         }
     }
@@ -78,5 +87,18 @@ class HighLevelConsumer
             $processor = resolve($className);
             is_string($queue) ? $processor->onQueue($queue)->execute($message) : $processor->execute($message);
         }
+    }
+
+    protected function shouldBeStopped(int|float $startTime, int $eventsProcessed): bool
+    {
+        if ($this->options->maxTime && hrtime(true) / 1e9 - $startTime >= $this->options->maxTime) {
+            return true;
+        } 
+
+        if ($this->options->maxEvents && $eventsProcessed >= $this->options->maxEvents) {
+            return true;
+        }
+
+        return false;
     }
 }

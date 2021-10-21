@@ -2,6 +2,7 @@
 
 namespace Ensi\LaravelPhpRdKafkaConsumer\Commands;
 
+use Ensi\LaravelPhpRdKafkaConsumer\ConsumerOptions;
 use Ensi\LaravelPhpRdKafkaConsumer\HighLevelConsumer;
 use Throwable;
 use Illuminate\Console\Command;
@@ -11,7 +12,13 @@ class KafkaConsumeCommand extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'kafka:consume {topic} {consumer=default}';
+    protected $signature = 'kafka:consume
+                            {topic : The name of the topic}
+                            {consumer=default : The name of the consumer}
+                            {--max-events=0 : The number of events to consume before stopping}
+                            {--max-time=0 : The maximum number of seconds the worker should run}
+                            {--once : Only process the next event in the topic}
+                            ';
 
     /**
      * The console command description.
@@ -50,8 +57,6 @@ class KafkaConsumeCommand extends Command
             return 1;
         }
 
-        $consumeTimeout = $processorData['consume_timeout'] ?? 20000;
-
         $supportedProcessorTypes = ['action', 'job'];
         $processorType = $processorData['type'] ?? 'action';
         if (!in_array($processorType, $supportedProcessorTypes)) {
@@ -62,9 +67,15 @@ class KafkaConsumeCommand extends Command
 
         $processorQueue = $processorData['queue'] ?? false;
 
+        $consumerOptions = new ConsumerOptions(
+            consumeTimeout: $processorData['consume_timeout'] ?? 20000,
+            maxEvents: $this->option('once') ? 1 : (int) $this->option('max-events'),
+            maxTime: (int) $this->option('max-time')
+        );
+
         $this->info("Start listenning to topic: \"$topic\", consumer \"$consumer\"");
         try {
-            $kafkaTopicListener = new HighLevelConsumer($topic, $consumer, $consumeTimeout);
+            $kafkaTopicListener = new HighLevelConsumer($topic, $consumer, $consumerOptions);
             $kafkaTopicListener->listen($processorClassName, $processorType, $processorQueue);
         } catch (Throwable $e) {
             $this->error('An error occurred while listening to the topic: '. $e->getMessage(). ' '. $e->getFile() . '::' . $e->getLine());
