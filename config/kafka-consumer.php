@@ -1,6 +1,8 @@
 <?php
 
 return [
+   'global_middleware' => [],
+
    'processors' => [
       [
          /*
@@ -41,12 +43,23 @@ return [
          |  - `<your-favorite-queue-name-as-string>` - stream message to this queue;
          */
          'queue' => false,
+      ],
+   ],
+   
+   'consumer_options' => [
+      /** options for consumer with name `default` */
+      'default' => [
+         /*
+         | Optional, defaults to 20000.
+         | Kafka consume timeout in milliseconds.
+         */
+        'consume_timeout' => 20000,
 
          /*
-         | Optional, defaults to 5000.
-         | Kafka consume timeout in milliseconds .
+         | Optional, defaults to empty array.
+         | Array of middleware.
          */
-         'consume_timeout' => 5000,
+        'middleware' => [],
       ]
-   ],
+   ]
 ];
