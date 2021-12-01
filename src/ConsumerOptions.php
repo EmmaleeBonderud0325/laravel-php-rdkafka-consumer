@@ -8,7 +8,7 @@ class ConsumerOptions
         public int $consumeTimeout = 20000,
         public int $maxEvents = 0,
         public int $maxTime = 0,
-    )
-    {
+        public array $middleware = [],
+    ) {
     }
 }

@@ -4,6 +4,7 @@ namespace Ensi\LaravelPhpRdKafkaConsumer;
 
 use Ensi\LaravelPhpRdKafka\KafkaManager;
 use Ensi\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerException;
+use Illuminate\Pipeline\Pipeline;
 use RdKafka\Exception as RdKafkaException;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
@@ -11,16 +12,21 @@ use Throwable;
 
 class HighLevelConsumer
 {
-    protected KafkaConsumer $consumer;
+    protected ?KafkaConsumer $consumer;
 
     public function __construct(
-        protected string $topicName, 
-        ?string $consumerName = null, 
-        protected ConsumerOptions $options,
-    )
+        protected KafkaManager $kafkaManager,
+        protected Pipeline $pipeline
+    ) {
+    }
+
+    public function for(?string $consumerName): static
     {
-        $manager = resolve(KafkaManager::class);
-        $this->consumer =  is_null($consumerName) ? $manager->consumer() : $manager->consumer($consumerName);
+        $this->consumer = is_null($consumerName)
+            ? $this->kafkaManager->consumer()
+            : $this->kafkaManager->consumer($consumerName);
+
+        return $this;
     }
 
     /**
@@ -28,21 +34,22 @@ class HighLevelConsumer
      * @throws RdKafkaException
      * @throws Throwable
      */
-    public function listen(string $processorClassName, string $processorType, string|bool $processorQueue): void
+    public function listen(string $topicName, ProcessorData $processorData, ConsumerOptions $options): void
     {
-        $this->consumer->subscribe([ $this->topicName ]);
+        $this->consumer->subscribe([ $topicName ]);
 
         [$startTime, $eventsProcessed] = [hrtime(true) / 1e9, 0];
 
         while (true) {
-            $message = $this->consumer->consume($this->options->consumeTimeout);
+            $message = $this->consumer->consume($options->consumeTimeout);
 
             switch ($message->err) {
 
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
-                    $this->executeProcessor($processorClassName, $processorType, $processorQueue, $message);
+                    $this->processThroughMiddleware($processorData, $message, $options);
                     $this->consumer->commitAsync($message);
                     $eventsProcessed++;
+
                     break;
 
                 case RD_KAFKA_RESP_ERR__TIMED_OUT:
@@ -55,45 +62,56 @@ class HighLevelConsumer
                     throw new KafkaConsumerException('Kafka error: ' . $message->errstr());
             }
 
-            if ($this->shouldBeStopped($startTime, $eventsProcessed)) {
+            if ($this->shouldBeStopped($startTime, $eventsProcessed, $options)) {
                 break;
             }
         }
     }
 
-    protected function executeProcessor(string $className, string $type, string|bool $queue, Message $message): void
+    protected function processThroughMiddleware(ProcessorData $processorData, Message $message, ConsumerOptions $options): void
     {
-        $queue 
-            ? $this->executeQueueableProcessor($className, $type, $queue, $message) 
-            : $this->executeSyncProcessor($className, $type, $message);
+        $this->pipeline
+            ->send($message)
+            ->through($options->middleware)
+            ->then(fn (Message $message) => $this->executeProcessor($processorData, $message));
     }
 
-    protected function executeSyncProcessor(string $className, string $type, Message $message): void
+    protected function executeProcessor(ProcessorData $processorData, Message $message): void
     {
-        if ($type === 'job') {
+        $processorData->queue
+            ? $this->executeQueueableProcessor($processorData, $message)
+            : $this->executeSyncProcessor($processorData, $message);
+    }
+
+    protected function executeSyncProcessor(ProcessorData $processorData, Message $message): void
+    {
+        $className = $processorData->class;
+        if ($processorData->type === 'job') {
             $className::dispatchSync($message);
-        } elseif ($type === 'action') {
+        } elseif ($processorData->type === 'action') {
             resolve($className)->execute($message);
         }
     }
 
-    protected function executeQueueableProcessor(string $className, string $type, string|bool $queue, Message $message): void
+    protected function executeQueueableProcessor(ProcessorData $processorData, Message $message): void
     {
-        if ($type === 'job') {
+        $className = $processorData->class;
+        $queue = $processorData->queue;
+        if ($processorData->type === 'job') {
             is_string($queue) ? $className::dispatch($message)->onQueue($queue) : $className::dispatch($message);
-        } elseif ($type === 'action') {
+        } elseif ($processorData->type === 'action') {
             $processor = resolve($className);
             is_string($queue) ? $processor->onQueue($queue)->execute($message) : $processor->execute($message);
         }
     }
 
-    protected function shouldBeStopped(int|float $startTime, int $eventsProcessed): bool
+    protected function shouldBeStopped(int|float $startTime, int $eventsProcessed, ConsumerOptions $options): bool
     {
-        if ($this->options->maxTime && hrtime(true) / 1e9 - $startTime >= $this->options->maxTime) {
+        if ($options->maxTime && hrtime(true) / 1e9 - $startTime >= $options->maxTime) {
             return true;
-        } 
+        }
 
-        if ($this->options->maxEvents && $eventsProcessed >= $this->options->maxEvents) {
+        if ($options->maxEvents && $eventsProcessed >= $options->maxEvents) {
             return true;
         }
 

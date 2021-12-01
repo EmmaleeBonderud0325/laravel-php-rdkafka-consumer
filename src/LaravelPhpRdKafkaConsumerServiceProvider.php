@@ -25,7 +25,7 @@ class LaravelPhpRdKafkaConsumerServiceProvider extends ServiceProvider
             ], "kafka-consumer-config");
 
             $this->commands([
-                KafkaConsumeCommand::class
+                KafkaConsumeCommand::class,
             ]);
         }
     }
