@@ -6,9 +6,10 @@ use Ensi\LaravelPhpRdKafkaConsumer\ConsumerOptions;
 use Ensi\LaravelPhpRdKafkaConsumer\HighLevelConsumer;
 use Ensi\LaravelPhpRdKafkaConsumer\ProcessorData;
 use Illuminate\Console\Command;
+use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Throwable;
 
-class KafkaConsumeCommand extends Command
+class KafkaConsumeCommand extends Command implements SignalableCommandInterface
 {
     /**
      * The name and signature of the console command.
@@ -26,11 +27,32 @@ class KafkaConsumeCommand extends Command
      */
     protected $description = 'Consume concrete topic';
 
+    protected ?HighLevelConsumer $consumer = null;
+
+    public function getStopSignalsFromConfig(): array
+    {
+        return config('kafka-consumer.stop_signals', []);
+    }
+
+    public function getSubscribedSignals(): array
+    {
+        return $this->getStopSignalsFromConfig();
+    }
+
+    public function handleSignal(int $signal): void
+    {
+        if ($this->consumer && in_array($signal, $this->getStopSignalsFromConfig())) {
+            $this->line("Stopping the consumer...");
+            $this->consumer->forceStop();
+        }
+    }
+
     /**
      * Execute the console command.
      */
     public function handle(HighLevelConsumer $highLevelConsumer): int
     {
+        $this->consumer = $highLevelConsumer;
         $topic = $this->argument('topic');
         $consumer = $this->argument('consumer');
         $availableConsumers = array_keys(config('kafka.consumers', []));

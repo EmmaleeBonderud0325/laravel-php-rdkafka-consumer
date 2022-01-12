@@ -14,6 +14,8 @@ class HighLevelConsumer
 {
     protected ?KafkaConsumer $consumer;
 
+    protected $forceStop = false;
+
     public function __construct(
         protected KafkaManager $kafkaManager,
         protected Pipeline $pipeline
@@ -25,6 +27,13 @@ class HighLevelConsumer
         $this->consumer = is_null($consumerName)
             ? $this->kafkaManager->consumer()
             : $this->kafkaManager->consumer($consumerName);
+
+        return $this;
+    }
+
+    public function forceStop(): static
+    {
+        $this->forceStop = true;
 
         return $this;
     }
@@ -115,6 +124,6 @@ class HighLevelConsumer
             return true;
         }
 
-        return false;
+        return $this->forceStop;
     }
 }
