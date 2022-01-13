@@ -124,6 +124,12 @@ class ConsumeMessageJob implements ShouldQueue
 
 ```
 
+### Handling signals
+
+`php artisan kafka:consume ...` command can be configured to gracefully stop after receiving some OS signals.  
+Such signals can be set in the `stop_signals` key of the package config, e.g `'stop_signals' => [SIGINT, SIGQUIT]`.  
+You can use any of the constants defined by the pcntl extension https://www.php.net/manual/en/pcntl.constants.php  
+
 ## Testing
 
 ```bash
