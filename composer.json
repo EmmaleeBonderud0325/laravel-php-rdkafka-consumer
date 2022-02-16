@@ -19,9 +19,9 @@
         "php": "^8.0",
         "ext-rdkafka": "*",
         "ensi/laravel-phprdkafka": "^0.2",
-        "illuminate/contracts": "^7.30 || ^8.37",
-        "illuminate/pipeline": "^7.30 || ^8.37",
-        "illuminate/support": "^7.30 || ^8.37"
+        "illuminate/contracts": "^8.37 || ^9.0",
+        "illuminate/pipeline": "^8.37 || ^9.0",
+        "illuminate/support": "^8.37 || ^9.0"
     },
     "require-dev": {
         "brianium/paratest": "^6.2",
