@@ -73,6 +73,10 @@ Processors in config have the following configuration options:
 ]
 
 ```
+
+**Important!** Some topics have to have different consumer settings, such as start reading topic from the beginning or don't create topic if it is not exists yet.  
+For such cases you need to configure several consumers and use suitable one.
+
 ### Synchronous processors
 
 Most of the time all tou need is a synchronous processor.

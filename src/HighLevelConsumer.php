@@ -45,7 +45,7 @@ class HighLevelConsumer
      */
     public function listen(string $topicName, ProcessorData $processorData, ConsumerOptions $options): void
     {
-        $this->consumer->subscribe([ $topicName ]);
+        $this->subscribe($topicName);
 
         [$startTime, $eventsProcessed] = [hrtime(true) / 1e9, 0];
 
@@ -125,5 +125,12 @@ class HighLevelConsumer
         }
 
         return $this->forceStop;
+    }
+
+    protected function subscribe(string $topicName): void
+    {
+        $this->consumer->newTopic($topicName);
+        sleep(1);
+        $this->consumer->subscribe([$topicName]);
     }
 }
