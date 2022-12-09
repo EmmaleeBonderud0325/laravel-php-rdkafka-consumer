@@ -2,7 +2,9 @@
 
 namespace Ensi\LaravelPhpRdKafkaConsumer;
 
+use Ensi\LaravelPhpRdKafkaConsumer\Commands\KafkaCheckOffsetsCommand;
 use Ensi\LaravelPhpRdKafkaConsumer\Commands\KafkaConsumeCommand;
+use Ensi\LaravelPhpRdKafkaConsumer\Commands\KafkaSetOffset;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelPhpRdKafkaConsumerServiceProvider extends ServiceProvider
@@ -26,6 +28,8 @@ class LaravelPhpRdKafkaConsumerServiceProvider extends ServiceProvider
 
             $this->commands([
                 KafkaConsumeCommand::class,
+                KafkaCheckOffsetsCommand::class,
+                KafkaSetOffset::class,
             ]);
         }
     }

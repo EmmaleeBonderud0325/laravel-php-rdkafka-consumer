@@ -8,6 +8,7 @@ use Illuminate\Pipeline\Pipeline;
 use RdKafka\Exception as RdKafkaException;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
+use RdKafka\TopicPartition;
 use Throwable;
 
 class HighLevelConsumer
@@ -132,5 +133,50 @@ class HighLevelConsumer
         $this->consumer->newTopic($topicName);
         sleep(1);
         $this->consumer->subscribe([$topicName]);
+    }
+
+    /**
+     * @param string $topicName
+     * @return TopicPartition[]
+     * @throws RdKafkaException
+     */
+    public function getPartitions(string $topicName): array
+    {
+        $metadata = $this->consumer->getMetadata(true, null, 1000);
+        foreach ($metadata->getTopics() as $topicMeta) {
+            if ($topicMeta->getTopic() != $topicName) {
+                continue;
+            }
+            $requestPartitions = [];
+            foreach ($topicMeta->getPartitions() as $partitionMeta) {
+                $requestPartitions[] = new TopicPartition($topicName, $partitionMeta->getId());
+                $partitionMeta->getId();
+            }
+
+            return $this->consumer->getCommittedOffsets($requestPartitions, 1000);
+        }
+
+        return [];
+    }
+
+    public function getPartitionBounds(string $topicName, int $partitionId): array
+    {
+        $this->consumer->queryWatermarkOffsets($topicName, $partitionId, $low, $high, 1000);
+
+        return [$low, $high];
+    }
+
+    /**
+     * @throws RdKafkaException
+     */
+    public function setOffset(string $topicName, int $partitionId, int $offset): void
+    {
+        $this->consumer->commit([
+            new TopicPartition(
+                $topicName,
+                $partitionId,
+                $offset
+            )
+        ]);
     }
 }
