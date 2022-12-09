@@ -130,8 +130,16 @@ class HighLevelConsumer
 
     protected function subscribe(string $topicName): void
     {
-        $this->consumer->newTopic($topicName);
-        sleep(1);
+        $attempts = 0;
+        do {
+            $topicExists = (bool)$this->getPartitions($topicName);
+            if (!$topicExists) {
+                $this->consumer->newTopic($topicName);
+                sleep(1);
+            }
+            $attempts++;
+        } while (!$topicExists && $attempts < 10);
+
         $this->consumer->subscribe([$topicName]);
     }
 
