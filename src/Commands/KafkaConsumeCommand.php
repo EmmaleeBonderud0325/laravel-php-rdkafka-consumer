@@ -56,14 +56,6 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
         $this->consumer = $highLevelConsumer;
         $topicKey = $this->argument('topic-key');
         $consumer = $this->argument('consumer');
-        $availableConsumers = array_keys(config('kafka.consumers', []));
-
-        if (!in_array($consumer, $availableConsumers)) {
-            $this->error("Unknown consumer \"$consumer\"");
-            $this->line('Available consumers are: "' . implode(', ', $availableConsumers) . '" and can be found in /config/kafka.php');
-
-            return 1;
-        }
 
         $processorData = $this->findMatchedProcessor($topicKey, $consumer);
         if (is_null($processorData)) {
@@ -94,8 +86,8 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
             middleware: $this->collectMiddleware($consumerPackageOptions['middleware'] ?? []),
         );
 
-        $topicName = KafkaFacade::topicName($topicKey);
-        $this->info("Start listenning to topic: \"$topicName\", consumer \"$consumer\"");
+        $topicName = KafkaFacade::topicNameByClient('consumer', $consumer, $topicKey);
+        $this->info("Start listening to topic: \"{$topicKey}\" ({$topicName}), consumer \"{$consumer}\"");
 
         try {
             $highLevelConsumer
@@ -113,10 +105,9 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
     protected function findMatchedProcessor(string $topic, string $consumer): ?ProcessorData
     {
         foreach (config('kafka-consumer.processors', []) as $processor) {
-            if (
-                (empty($processor['topic']) || $processor['topic'] === $topic)
-                && (empty($processor['consumer']) || $processor['consumer'] === $consumer)
-                ) {
+            $topicMatched = empty($processor['topic']) || $processor['topic'] === $topic;
+            $consumerMatched = empty($processor['consumer']) || $processor['consumer'] === $consumer;
+            if ($topicMatched && $consumerMatched) {
                 return new ProcessorData(
                     class: $processor['class'],
                     topicKey: $processor['topic'] ?? null,
