@@ -8,7 +8,7 @@ class ProcessorData
 
     public function __construct(
         public string $class,
-        public ?string $topic = null,
+        public ?string $topicKey = null,
         public ?string $consumer = null,
         public string $type = 'action',
         public string|bool $queue = false,

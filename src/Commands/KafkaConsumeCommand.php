@@ -2,6 +2,7 @@
 
 namespace Ensi\LaravelPhpRdKafkaConsumer\Commands;
 
+use Ensi\LaravelPhpRdKafka\KafkaFacade;
 use Ensi\LaravelPhpRdKafkaConsumer\ConsumerOptions;
 use Ensi\LaravelPhpRdKafkaConsumer\HighLevelConsumer;
 use Ensi\LaravelPhpRdKafkaConsumer\ProcessorData;
@@ -15,7 +16,7 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
      * The name and signature of the console command.
      */
     protected $signature = 'kafka:consume
-                            {topic : The name of the topic}
+                            {topic-key : The key of a topic in the kafka.topics list}
                             {consumer=default : The name of the consumer}
                             {--max-events=0 : The number of events to consume before stopping}
                             {--max-time=0 : The maximum number of seconds the worker should run}
@@ -53,7 +54,7 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
     public function handle(HighLevelConsumer $highLevelConsumer): int
     {
         $this->consumer = $highLevelConsumer;
-        $topic = $this->argument('topic');
+        $topicKey = $this->argument('topic-key');
         $consumer = $this->argument('consumer');
         $availableConsumers = array_keys(config('kafka.consumers', []));
 
@@ -64,9 +65,9 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
             return 1;
         }
 
-        $processorData = $this->findMatchedProcessor($topic, $consumer);
+        $processorData = $this->findMatchedProcessor($topicKey, $consumer);
         if (is_null($processorData)) {
-            $this->error("Processor for topic \"$topic\" and consumer \"$consumer\" is not found");
+            $this->error("Processor for topic-key \"$topicKey\" and consumer \"$consumer\" is not found");
             $this->line('Processors are set in /config/kafka-consumers.php');
 
             return 1;
@@ -93,12 +94,13 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
             middleware: $this->collectMiddleware($consumerPackageOptions['middleware'] ?? []),
         );
 
-        $this->info("Start listenning to topic: \"$topic\", consumer \"$consumer\"");
+        $topicName = KafkaFacade::topicName($topicKey);
+        $this->info("Start listenning to topic: \"$topicName\", consumer \"$consumer\"");
 
         try {
             $highLevelConsumer
                 ->for($consumer)
-                ->listen($topic, $processorData, $consumerOptions);
+                ->listen($topicName, $processorData, $consumerOptions);
         } catch (Throwable $e) {
             $this->error('An error occurred while listening to the topic: '. $e->getMessage(). ' '. $e->getFile() . '::' . $e->getLine());
 
@@ -117,7 +119,7 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
                 ) {
                 return new ProcessorData(
                     class: $processor['class'],
-                    topic: $processor['topic'] ?? null,
+                    topicKey: $processor['topic'] ?? null,
                     consumer: $processor['consumer'] ?? null,
                     type: $processor['type'] ?? 'action',
                     queue: $processor['queue'] ?? false,
