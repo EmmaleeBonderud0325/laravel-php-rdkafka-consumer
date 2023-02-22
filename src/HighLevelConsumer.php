@@ -4,6 +4,7 @@ namespace Ensi\LaravelPhpRdKafkaConsumer;
 
 use Ensi\LaravelPhpRdKafka\KafkaManager;
 use Ensi\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerException;
+use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Pipeline\Pipeline;
 use RdKafka\Exception as RdKafkaException;
 use RdKafka\KafkaConsumer;
@@ -15,7 +16,7 @@ class HighLevelConsumer
 {
     protected ?KafkaConsumer $consumer;
 
-    protected $forceStop = false;
+    protected bool $forceStop = false;
 
     public function __construct(
         protected KafkaManager $kafkaManager,
@@ -40,7 +41,6 @@ class HighLevelConsumer
     }
 
     /**
-     * @throws KafkaException
      * @throws RdKafkaException
      * @throws Throwable
      */
@@ -95,6 +95,7 @@ class HighLevelConsumer
 
     protected function executeSyncProcessor(ProcessorData $processorData, Message $message): void
     {
+        /** @var class-string|Dispatchable $className */
         $className = $processorData->class;
         if ($processorData->type === 'job') {
             $className::dispatchSync($message);
@@ -105,6 +106,7 @@ class HighLevelConsumer
 
     protected function executeQueueableProcessor(ProcessorData $processorData, Message $message): void
     {
+        /** @var class-string|Dispatchable $className */
         $className = $processorData->class;
         $queue = $processorData->queue;
         if ($processorData->type === 'job') {
