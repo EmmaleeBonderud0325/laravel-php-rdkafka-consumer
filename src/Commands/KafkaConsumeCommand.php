@@ -60,14 +60,14 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
         $processorData = $this->findMatchedProcessor($topicKey, $consumer);
         if (is_null($processorData)) {
             $this->error("Processor for topic-key \"$topicKey\" and consumer \"$consumer\" is not found");
-            $this->line('Processors are set in /config/kafka-consumers.php');
+            $this->line('Processors are set in /config/kafka-consumer.php');
 
             return 1;
         }
 
         if (!class_exists($processorData->class)) {
             $this->error("Processor class \"$processorData->class\" is not found");
-            $this->line('Processors are set in /config/kafka-consumers.php');
+            $this->line('Processors are set in /config/kafka-consumer.php');
 
             return 1;
         }
