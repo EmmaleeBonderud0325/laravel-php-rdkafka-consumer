@@ -32,6 +32,7 @@ class KafkaCheckOffsetsCommand extends Command
         $partitions = $consumer->getPartitions($topicName);
         if (!$partitions) {
             $this->getOutput()->writeln("    <fg=red>Topic {$topicName} doesn't exists!</>");
+
             return false;
         }
         $success = true;
