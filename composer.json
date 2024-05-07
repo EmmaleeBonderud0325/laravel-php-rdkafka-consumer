@@ -18,7 +18,7 @@
     "require": {
         "php": "^8.0",
         "ext-rdkafka": "*",
-        "ensi/laravel-phprdkafka": "dev-laravel-11",
+        "ensi/laravel-phprdkafka": "^0.3.4",
         "illuminate/contracts": "^10.0 || ^11.0",
         "illuminate/pipeline": "^10.0 || ^11.0",
         "illuminate/support": "^10.0 || ^11.0"
