@@ -186,7 +186,7 @@ class HighLevelConsumer
                 $topicName,
                 $partitionId,
                 $offset
-            )
+            ),
         ]);
     }
 }
