@@ -40,12 +40,14 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
         return $this->getStopSignalsFromConfig();
     }
 
-    public function handleSignal(int $signal): void
+    public function handleSignal(int $signal, int|false $previousExitCode = 0): int|false
     {
-        if ($this->consumer && in_array($signal, $this->getStopSignalsFromConfig())) {
+        if ($this->consumer) {
             $this->line("Stopping the consumer...");
             $this->consumer->forceStop();
         }
+
+        return $previousExitCode;
     }
 
     /**

@@ -27,6 +27,7 @@ class KafkaSetOffset extends Command
 
         if (!in_array($offset, [self::EARLIEST, self::LATEST]) && !is_numeric($offset)) {
             $this->getOutput()->writeln("<fg=red>Error: Invalid offset</>");
+
             return self::INVALID;
         }
 
