@@ -45,7 +45,7 @@ class KafkaSetOffset extends Command
 
         try {
             $bounds = $consumer->getPartitionBounds($topicName, $partitionId);
-            $realOffset = match($offset) {
+            $realOffset = match ($offset) {
                 'earliest' => $bounds[0] ?? 0,
                 'latest' => $bounds[1] ?? 0,
                 default => $offset,
