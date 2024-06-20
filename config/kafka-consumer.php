@@ -4,7 +4,9 @@ return [
    'global_middleware' => [],
 
    'processors' => [],
-   
+
+   'log_channel' => env('KAFKA_CONSUMER_LOG_CHANNEL', 'null'),
+
    'consumer_options' => [
       /** options for consumer with name `default` */
       'default' => [
@@ -19,6 +21,6 @@ return [
          | Array of middleware.
          */
         'middleware' => [],
-      ]
-   ]
+      ],
+   ],
 ];

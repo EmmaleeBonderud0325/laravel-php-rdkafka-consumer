@@ -5,9 +5,10 @@ namespace Ensi\LaravelPhpRdKafkaConsumer\Commands;
 use Ensi\LaravelPhpRdKafka\KafkaFacade;
 use Ensi\LaravelPhpRdKafkaConsumer\ConsumerOptions;
 use Ensi\LaravelPhpRdKafkaConsumer\HighLevelConsumer;
+use Ensi\LaravelPhpRdKafkaConsumer\Logger\ConsumerLoggerFactory;
+use Ensi\LaravelPhpRdKafkaConsumer\Logger\ConsumerLoggerInterface;
 use Ensi\LaravelPhpRdKafkaConsumer\ProcessorData;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Throwable;
 
@@ -54,29 +55,31 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
     /**
      * Execute the console command.
      */
-    public function handle(HighLevelConsumer $highLevelConsumer): int
+    public function handle(HighLevelConsumer $highLevelConsumer, ConsumerLoggerFactory $loggerFactory): int
     {
         $this->consumer = $highLevelConsumer;
         $topicKey = $this->argument('topic-key');
         $consumer = $this->argument('consumer');
 
+        $logger = $loggerFactory->make($topicKey, $consumer);
+
         $processorData = $this->findMatchedProcessor($topicKey, $consumer);
         if (is_null($processorData)) {
-            $this->error("Processor for topic-key \"$topicKey\" and consumer \"$consumer\" is not found");
+            $this->errorMessage($logger, "Processor for topic-key \"$topicKey\" and consumer \"$consumer\" is not found");
             $this->line('Processors are set in /config/kafka-consumer.php');
 
             return 1;
         }
 
         if (!class_exists($processorData->class)) {
-            $this->error("Processor class \"$processorData->class\" is not found");
+            $this->errorMessage($logger, "Processor class \"$processorData->class\" is not found");
             $this->line('Processors are set in /config/kafka-consumer.php');
 
             return 1;
         }
 
         if (!$processorData->hasValidType()) {
-            $this->error("Invalid processor type \"$processorData->type\", supported types are: " . implode(',', $processorData->getSupportedTypes()));
+            $this->errorMessage($logger, "Invalid processor type \"$processorData->type\", supported types are: " . implode(',', $processorData->getSupportedTypes()));
 
             return 1;
         }
@@ -97,9 +100,7 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
                 ->for($consumer)
                 ->listen($topicName, $processorData, $consumerOptions);
         } catch (Throwable $e) {
-            Log::error($e->getMessage(), ['exception' => $e]);
-
-            $this->error('An error occurred while listening to the topic: '. $e->getMessage(). ' '. $e->getFile() . '::' . $e->getLine());
+            $this->errorThrowable($logger, $e);
 
             return 1;
         }
@@ -135,5 +136,17 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
                 $processorMiddleware
             )
         );
+    }
+
+    private function errorThrowable(ConsumerLoggerInterface $logger, Throwable $e): void
+    {
+        $logger->error($e->getMessage(), ['exception' => $e]);
+        $this->error('An error occurred while listening to the topic: '. $e->getMessage(). ' '. $e->getFile() . '::' . $e->getLine());
+    }
+
+    private function errorMessage(ConsumerLoggerInterface $logger, string $message): void
+    {
+        $logger->error($message);
+        $this->error($message);
     }
 }
