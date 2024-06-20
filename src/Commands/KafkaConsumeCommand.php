@@ -7,6 +7,7 @@ use Ensi\LaravelPhpRdKafkaConsumer\ConsumerOptions;
 use Ensi\LaravelPhpRdKafkaConsumer\HighLevelConsumer;
 use Ensi\LaravelPhpRdKafkaConsumer\ProcessorData;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Throwable;
 
@@ -96,6 +97,8 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
                 ->for($consumer)
                 ->listen($topicName, $processorData, $consumerOptions);
         } catch (Throwable $e) {
+            Log::error($e->getMessage(), ['exception' => $e]);
+
             $this->error('An error occurred while listening to the topic: '. $e->getMessage(). ' '. $e->getFile() . '::' . $e->getLine());
 
             return 1;
