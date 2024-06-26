@@ -23,6 +23,14 @@ class KafkaSetOffset extends Command
         $consumerName = $this->option('consumer');
         $topicName = $this->option('topic');
         $partitionId = $this->option('partition');
+        if (blank($partitionId)) {
+            $this->getOutput()->writeln("<fg=red>Error: Invalid partition</>");
+
+            return self::INVALID;
+        } else {
+            $partitionId = (int)$partitionId;
+        }
+
         $offset = $this->option('offset');
 
         if (!in_array($offset, [self::EARLIEST, self::LATEST]) && !is_numeric($offset)) {
@@ -37,7 +45,7 @@ class KafkaSetOffset extends Command
 
         try {
             $bounds = $consumer->getPartitionBounds($topicName, $partitionId);
-            $realOffset = match($offset) {
+            $realOffset = match ($offset) {
                 'earliest' => $bounds[0] ?? 0,
                 'latest' => $bounds[1] ?? 0,
                 default => $offset,

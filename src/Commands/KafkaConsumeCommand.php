@@ -80,7 +80,7 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
             return 1;
         }
 
-        $consumerPackageOptions = config('kafka-consumer.consumer_options.'. $consumer, []);
+        $consumerPackageOptions = config('kafka-consumer.consumer_options.' . $consumer, []);
         $consumerOptions = new ConsumerOptions(
             consumeTimeout: $consumerPackageOptions['consume_timeout'] ?? $processorData->consumeTimeout,
             maxEvents: $this->option('once') ? 1 : (int) $this->option('max-events'),
@@ -96,7 +96,7 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
                 ->for($consumer)
                 ->listen($topicName, $processorData, $consumerOptions);
         } catch (Throwable $e) {
-            $this->error('An error occurred while listening to the topic: '. $e->getMessage(). ' '. $e->getFile() . '::' . $e->getLine());
+            $this->error('An error occurred while listening to the topic: ' . $e->getMessage() . ' ' . $e->getFile() . '::' . $e->getLine());
 
             return 1;
         }
