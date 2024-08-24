@@ -9,17 +9,12 @@ use Illuminate\Support\ServiceProvider;
 
 class LaravelPhpRdKafkaConsumerServiceProvider extends ServiceProvider
 {
-    /**
-     * Register the service provider.
-     *
-     * @return void
-     */
-    public function register()
+    public function register(): void
     {
         $this->mergeConfigFrom($this->packageBasePath("/../config/kafka-consumer.php"), 'kafka-consumer');
     }
 
-    public function boot()
+    public function boot(): void
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([

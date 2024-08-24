@@ -1,5 +1,9 @@
 # Laravel PHP Rdkafka Consumer
 
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/ensi/laravel-phprdkafka-consumer.svg?style=flat-square)](https://packagist.org/packages/ensi/laravel-phprdkafka-consumer)
+[![Tests](https://github.com/ensi-platform/laravel-php-rdkafka/actions/workflows/run-tests.yml/badge.svg?branch=master)](https://github.com/ensi-platform/laravel-php-rdkafka/actions/workflows/run-tests.yml)
+[![Total Downloads](https://img.shields.io/packagist/dt/ensi/laravel-phprdkafka-consumer.svg?style=flat-square)](https://packagist.org/packages/ensi/laravel-phprdkafka-consumer)
+
 Opiniated High Level consumer for [ensi/laravel-phprdkafka](https://github.com/ensi-platform/laravel-php-rdkafka)
 
 ## Installation
@@ -18,7 +22,21 @@ php artisan vendor:publish --provider="Ensi\LaravelPhpRdKafkaConsumer\LaravelPhp
 
 Now go to `config/kafka-consumer.php` and add processors there.
 
-## Usage
+## Version Compatibility
+
+| Laravel rdkakfa-consumer | Laravel                   | PHP  | ensi/laravel-phprdkafka |
+|--------------------------|---------------------------|------|-------------------------|
+| ^0.1.0                   | ^7.x \|\| ^8.x            | ^8.0 | ^0.1.4                  |
+| ^0.2.0                   | ^7.x \|\| ^8.x            | ^8.0 | ^0.1.4                  |
+| ^0.2.1                   | ^7.x \|\| ^8.x            | ^8.0 | ^0.2                    |
+| ^0.2.5                   | ^8.x \|\| ^9.x            | ^8.0 | ^0.2                    |
+| ^0.3.0                   | ^8.x \|\| ^9.x            | ^8.0 | ^0.3                    |
+| ^0.3.2                   | ^8.x \|\| ^9.x \|\| ^10.x | ^8.0 | ^0.3                    |
+| ^1.0.0                   | ^8.x \|\| ^9.x            | ^8.0 | ^0.3                    |
+| ^2.0.0                   | ^10.x \|\| ^11.x          | ^8.1 | ^0.3                    |
+| ^2.0.1                   | ^10.x \|\| ^11.x          | ^8.1 | ^0.4.0                  |
+
+## Basic Usage
 
 The package provides `php artisan kafka:consume {topic} {consumer=default} {--max-events=0} {--max-time=0} {--once}` command that executes the first processor that matches given topic and consumer name. Consumer name is taken from `ensi/laravel-phprdkafka config` file.
 
@@ -132,8 +150,11 @@ class ConsumeMessageJob implements ShouldQueue
 
 `php artisan kafka:consume ...` command can be configured to gracefully stop after receiving some OS signals.   
 Such signals can be set in the `stop_signals` key of the package config, e.g `'stop_signals' => [SIGINT, SIGQUIT]`.   
-You can use any of the constants defined by the pcntl extension https://www.php.net/manual/en/pcntl.constants.php   
+You can use any of the constants defined by the pcntl extension https://www.php.net/manual/en/pcntl.constants.php
 
+## Contributing
+
+Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 ## Consumer testing
 
@@ -175,13 +196,14 @@ test('test consume apache kafka', function () {
 
 ## Testing
 
-```bash
-composer test
-```
+### Testing
 
-## Changelog
+1. composer install
+2. composer test
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+## Security Vulnerabilities
+
+Please review [our security policy](.github/SECURITY.md) on how to report security vulnerabilities.
 
 ## License
 
