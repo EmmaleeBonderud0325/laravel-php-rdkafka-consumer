@@ -4,6 +4,7 @@ namespace Ensi\LaravelPhpRdKafkaConsumer\Tests\Consumer;
 
 use Ensi\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerMessagedEndedException;
 use Ensi\LaravelPhpRdKafkaConsumer\Tests\Consumer\Topics\Metadata;
+use Ensi\LaravelPhpRdKafkaConsumer\Tests\Consumer\Topics\Topic;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer as BaseKafkaConsumer;
 use RdKafka\TopicConf;
@@ -39,19 +40,34 @@ class KafkaConsumer extends BaseKafkaConsumer
         return array_shift($this->messages);
     }
 
-    public function getMetadata($all_topics, $only_topic, $timeout_ms): Metadata
+    /**
+     * @param $all_topics
+     * @param $only_topic
+     * @param $timeout_ms
+     * @return Metadata
+     *
+     * @phpstan-ignore-next-line
+     */
+    public function getMetadata($all_topics, $only_topic = null, $timeout_ms): Metadata
     {
         return $this->metadata;
     }
 
-    public function getCommittedOffsets($topicPartitions, $timeout_ms): array
+    public function getCommittedOffsets($topic_partitions, $timeout_ms): array
     {
-        return $topicPartitions;
+        return $topic_partitions;
     }
 
-    public function newTopic($topic_name, TopicConf $topic_conf = null)
+    /**
+     * @param $topic_name
+     * @param TopicConf|null $topic_conf
+     * @return Topic
+     *
+     * @phpstan-ignore-next-line
+     */
+    public function newTopic($topic_name, $topic_conf = null): Topic
     {
-
+        return new Topic($topic_name);
     }
 
     public function commitAsync($message_or_offsets = null)

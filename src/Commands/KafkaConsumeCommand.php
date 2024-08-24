@@ -86,7 +86,7 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
             $this->consumer = $consumerFactory
                 ->build($this->getTopicKey(), $this->getConsumer());
 
-            $this->info("Start listening to topic: \"{$this->getTopicKey()}\"".
+            $this->info("Start listening to topic: \"{$this->getTopicKey()}\"" .
                 " ({$this->consumer->getTopicName()}), consumer \"{$this->getConsumer()}\"");
 
             $this->consumer
@@ -117,8 +117,8 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
             return;
         }
 
-        $this->error('An error occurred while listening to the topic: '.
-            $exception->getMessage(). ' '. $exception->getFile() . '::' . $exception->getLine());
+        $this->error('An error occurred while listening to the topic: ' .
+            $exception->getMessage() . ' ' . $exception->getFile() . '::' . $exception->getLine());
     }
 
     private function makeLogger(): ConsumerLoggerInterface

@@ -52,7 +52,7 @@ class ConsumerFactory
         }
 
         if (!$processorData->hasValidType()) {
-            throw new KafkaConsumerProcessorException("Invalid processor type \"$processorData->type\",".
+            throw new KafkaConsumerProcessorException("Invalid processor type \"$processorData->type\"," .
                 " supported types are: " . implode(',', $processorData->getSupportedTypes()));
         }
 
@@ -89,7 +89,7 @@ class ConsumerFactory
 
     protected function makeConsumerOptions(string $consumer, ProcessorData $processorData): ConsumerOptions
     {
-        $consumerPackageOptions = config('kafka-consumer.consumer_options.'. $consumer, []);
+        $consumerPackageOptions = config('kafka-consumer.consumer_options.' . $consumer, []);
 
         return new ConsumerOptions(
             consumeTimeout: $consumerPackageOptions['consume_timeout'] ?? $processorData->consumeTimeout,

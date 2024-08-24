@@ -3,6 +3,7 @@
 namespace Ensi\LaravelPhpRdKafkaConsumer\Tests;
 
 use function PHPUnit\Framework\assertContains;
+
 use RdKafka\Message;
 
 class TestConsumer
