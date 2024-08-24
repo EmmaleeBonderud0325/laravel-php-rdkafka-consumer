@@ -2,12 +2,12 @@
 
 namespace Ensi\LaravelPhpRdKafkaConsumer\Commands;
 
-use Ensi\LaravelPhpRdKafka\KafkaFacade;
-use Ensi\LaravelPhpRdKafkaConsumer\ConsumerOptions;
-use Ensi\LaravelPhpRdKafkaConsumer\HighLevelConsumer;
-use Ensi\LaravelPhpRdKafkaConsumer\Logger\ConsumerLoggerFactory;
-use Ensi\LaravelPhpRdKafkaConsumer\Logger\ConsumerLoggerInterface;
-use Ensi\LaravelPhpRdKafkaConsumer\ProcessorData;
+use Ensi\LaravelPhpRdKafkaConsumer\Consumers\Consumer;
+use Ensi\LaravelPhpRdKafkaConsumer\Consumers\Factories\ConsumerFactory;
+use Ensi\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerException;
+use Ensi\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerProcessorException;
+use Ensi\LaravelPhpRdKafkaConsumer\Loggers\ConsumerLoggerFactory;
+use Ensi\LaravelPhpRdKafkaConsumer\Loggers\ConsumerLoggerInterface;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Throwable;
@@ -30,7 +30,12 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
      */
     protected $description = 'Consume concrete topic';
 
-    protected ?HighLevelConsumer $consumer = null;
+    protected ?Consumer $consumer = null;
+
+    public function __construct(protected ConsumerLoggerFactory $loggerFactory)
+    {
+        parent::__construct();
+    }
 
     public function getStopSignalsFromConfig(): array
     {
@@ -40,6 +45,26 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
     public function getSubscribedSignals(): array
     {
         return $this->getStopSignalsFromConfig();
+    }
+
+    public function getTopicKey(): string
+    {
+        return $this->argument('topic-key');
+    }
+
+    public function getConsumer(): string
+    {
+        return $this->argument('consumer');
+    }
+
+    public function getMaxEvents(): int
+    {
+        return $this->option('once') ? 1 : (int) $this->option('max-events');
+    }
+
+    public function getMaxTime(): int
+    {
+        return (int) $this->option('max-time');
     }
 
     public function handleSignal(int $signal, int|false $previousExitCode = 0): int|false
@@ -55,98 +80,50 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
     /**
      * Execute the console command.
      */
-    public function handle(HighLevelConsumer $highLevelConsumer, ConsumerLoggerFactory $loggerFactory): int
+    public function handle(ConsumerFactory $consumerFactory): int
     {
-        $this->consumer = $highLevelConsumer;
-        $topicKey = $this->argument('topic-key');
-        $consumer = $this->argument('consumer');
-
-        $logger = $loggerFactory->make($topicKey, $consumer);
-
-        $processorData = $this->findMatchedProcessor($topicKey, $consumer);
-        if (is_null($processorData)) {
-            $this->errorMessage($logger, "Processor for topic-key \"$topicKey\" and consumer \"$consumer\" is not found");
-            $this->line('Processors are set in /config/kafka-consumer.php');
-
-            return 1;
-        }
-
-        if (!class_exists($processorData->class)) {
-            $this->errorMessage($logger, "Processor class \"$processorData->class\" is not found");
-            $this->line('Processors are set in /config/kafka-consumer.php');
-
-            return 1;
-        }
-
-        if (!$processorData->hasValidType()) {
-            $this->errorMessage($logger, "Invalid processor type \"$processorData->type\", supported types are: " . implode(',', $processorData->getSupportedTypes()));
-
-            return 1;
-        }
-
-        $consumerPackageOptions = config('kafka-consumer.consumer_options.'. $consumer, []);
-        $consumerOptions = new ConsumerOptions(
-            consumeTimeout: $consumerPackageOptions['consume_timeout'] ?? $processorData->consumeTimeout,
-            maxEvents: $this->option('once') ? 1 : (int) $this->option('max-events'),
-            maxTime: (int) $this->option('max-time'),
-            middleware: $this->collectMiddleware($consumerPackageOptions['middleware'] ?? []),
-        );
-
-        $topicName = KafkaFacade::topicNameByClient('consumer', $consumer, $topicKey);
-        $this->info("Start listening to topic: \"{$topicKey}\" ({$topicName}), consumer \"{$consumer}\"");
-
         try {
-            $highLevelConsumer
-                ->for($consumer)
-                ->listen($topicName, $processorData, $consumerOptions);
-        } catch (Throwable $e) {
-            $this->errorThrowable($logger, $e);
+            $this->consumer = $consumerFactory
+                ->build($this->getTopicKey(), $this->getConsumer());
 
-            return 1;
+            $this->info("Start listening to topic: \"{$this->getTopicKey()}\"".
+                " ({$this->consumer->getTopicName()}), consumer \"{$this->getConsumer()}\"");
+
+            $this->consumer
+                ->setMaxEvents($this->getMaxEvents())
+                ->setMaxTime($this->getMaxTime())
+                ->listen();
+        } catch (Throwable $exception) {
+            $this->errorThrowable($exception);
+
+            return self::FAILURE;
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 
-    protected function findMatchedProcessor(string $topic, string $consumer): ?ProcessorData
+    private function errorThrowable(Throwable $exception): void
     {
-        foreach (config('kafka-consumer.processors', []) as $processor) {
-            $topicMatched = empty($processor['topic']) || $processor['topic'] === $topic;
-            $consumerMatched = empty($processor['consumer']) || $processor['consumer'] === $consumer;
-            if ($topicMatched && $consumerMatched) {
-                return new ProcessorData(
-                    class: $processor['class'],
-                    topicKey: $processor['topic'] ?? null,
-                    consumer: $processor['consumer'] ?? null,
-                    type: $processor['type'] ?? 'action',
-                    queue: $processor['queue'] ?? false,
-                    consumeTimeout: $processor['consume_timeout'] ?? 20000,
-                );
+        $this->makeLogger()
+            ->error($exception->getMessage(), ['exception' => $exception]);
+
+        if ($exception instanceof KafkaConsumerException) {
+            $this->error($exception->getMessage());
+
+            if ($exception instanceof KafkaConsumerProcessorException) {
+                $this->line('Processors are set in /config/kafka-consumer.php');
             }
+
+            return;
         }
 
-        return null;
+        $this->error('An error occurred while listening to the topic: '.
+            $exception->getMessage(). ' '. $exception->getFile() . '::' . $exception->getLine());
     }
 
-    protected function collectMiddleware(array $processorMiddleware): array
+    private function makeLogger(): ConsumerLoggerInterface
     {
-        return array_unique(
-            array_merge(
-                config('kafka-consumer.global_middleware', []),
-                $processorMiddleware
-            )
-        );
-    }
-
-    private function errorThrowable(ConsumerLoggerInterface $logger, Throwable $e): void
-    {
-        $logger->error($e->getMessage(), ['exception' => $e]);
-        $this->error('An error occurred while listening to the topic: '. $e->getMessage(). ' '. $e->getFile() . '::' . $e->getLine());
-    }
-
-    private function errorMessage(ConsumerLoggerInterface $logger, string $message): void
-    {
-        $logger->error($message);
-        $this->error($message);
+        return $this->loggerFactory
+            ->make($this->getTopicKey(), $this->getConsumer());
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Ensi\LaravelPhpRdKafkaConsumer\Logger;
+namespace Ensi\LaravelPhpRdKafkaConsumer\Loggers;
 
 use Illuminate\Support\Facades\Log;
 use Psr\Log\LoggerInterface;

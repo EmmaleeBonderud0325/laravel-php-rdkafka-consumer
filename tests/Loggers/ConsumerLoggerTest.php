@@ -1,7 +1,7 @@
 <?php
 
-use _PHPStan_01e5828ef\Psr\Log\LogLevel;
-use Ensi\LaravelPhpRdKafkaConsumer\Logger\ConsumerLogger;
+use Ensi\LaravelPhpRdKafkaConsumer\Loggers\ConsumerLogger;
+use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
 
 test('merging context when call log', function () {

@@ -134,6 +134,45 @@ class ConsumeMessageJob implements ShouldQueue
 Such signals can be set in the `stop_signals` key of the package config, e.g `'stop_signals' => [SIGINT, SIGQUIT]`.   
 You can use any of the constants defined by the pcntl extension https://www.php.net/manual/en/pcntl.constants.php   
 
+
+## Consumer testing
+
+Testing tools have been added to test the developed handlers. You can create a fake 
+Consumer and call the topic listening command:
+
+```php
+use Ensi\LaravelPhpRdKafkaConsumer\Commands\KafkaConsumeCommand;
+use Ensi\LaravelPhpRdKafkaConsumer\Tests\KafkaManagerFaker;
+use RdKafka\Message;
+
+test('test consume apache kafka', function () {
+    KafkaManagerFaker::new('test-model')
+        ->addMessage(new Message())
+        ->bind();
+    
+    artisan(KafkaConsumeCommand::class, ['topic-key' => 'test-model'])
+        ->assertOk();
+});
+```
+
+or
+
+```php
+use Ensi\LaravelPhpRdKafkaConsumer\Consumers\Factories\ConsumerFactory;
+use Ensi\LaravelPhpRdKafkaConsumer\Tests\KafkaManagerFaker;
+use RdKafka\Message;
+
+test('test consume apache kafka', function () {
+    KafkaManagerFaker::new('test-model')
+        ->addMessage(new Message())
+        ->bind();
+    
+    resovle(ConsumerFactory::class)
+        ->build('test-model')
+        ->listen();
+});
+```
+
 ## Testing
 
 ```bash

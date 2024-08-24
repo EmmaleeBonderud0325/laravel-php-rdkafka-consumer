@@ -1,6 +1,6 @@
 <?php
 
-use Ensi\LaravelPhpRdKafkaConsumer\Logger\ConsumerLoggerFactory;
+use Ensi\LaravelPhpRdKafkaConsumer\Loggers\ConsumerLoggerFactory;
 use Psr\Log\NullLogger;
 
 test('test create consumer logger from factory', function (?string $channel) {
