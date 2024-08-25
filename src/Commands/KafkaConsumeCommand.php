@@ -52,7 +52,7 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
         return $this->argument('topic-key');
     }
 
-    public function getConsumer(): string
+    public function getConsumerName(): string
     {
         return $this->argument('consumer');
     }
@@ -84,12 +84,12 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
     {
         try {
             $this->consumer = $consumerFactory
-                ->build($this->getTopicKey(), $this->getConsumer())
+                ->build($this->getTopicKey(), $this->getConsumerName())
                 ->setMaxEvents($this->getMaxEvents())
                 ->setMaxTime($this->getMaxTime());
 
             $this->info("Start listening to topic: \"{$this->getTopicKey()}\"" .
-                " ({$this->consumer->getTopicName()}), consumer \"{$this->getConsumer()}\"");
+                " ({$this->consumer->getTopicName()}), consumer \"{$this->getConsumerName()}\"");
 
             $this->consumer->listen();
         } catch (Throwable $exception) {
@@ -123,6 +123,6 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
     private function makeLogger(): ConsumerLoggerInterface
     {
         return $this->loggerFactory
-            ->make($this->getTopicKey(), $this->getConsumer());
+            ->make($this->getTopicKey(), $this->getConsumerName());
     }
 }

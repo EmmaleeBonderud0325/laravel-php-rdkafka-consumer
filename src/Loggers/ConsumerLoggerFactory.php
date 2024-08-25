@@ -8,12 +8,12 @@ use Psr\Log\NullLogger;
 
 final class ConsumerLoggerFactory
 {
-    public function make(string $topicKey, string $consumer): ConsumerLoggerInterface
+    public function make(string $topicKey, string $consumerName = 'default'): ConsumerLoggerInterface
     {
         return new ConsumerLogger(
             $this->makeLogger(),
             $topicKey,
-            $consumer
+            $consumerName
         );
     }
 

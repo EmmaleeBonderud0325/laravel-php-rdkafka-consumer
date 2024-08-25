@@ -20,9 +20,9 @@ class ConsumerFaker
 
     public function __construct(
         protected string $topicKey,
-        protected string $consumer = 'default'
+        protected string $consumerName = 'default'
     ) {
-        $this->topicName = KafkaFacade::topicNameByClient('consumer', $consumer, $topicKey);
+        $this->topicName = KafkaFacade::topicNameByClient('consumer', $consumerName, $topicKey);
     }
 
     public function addMessage(Message $message): self
@@ -50,7 +50,7 @@ class ConsumerFaker
         $this->bind();
 
         (new ConsumerFactory(resolve(HighLevelConsumer::class)))
-            ->build($this->topicKey, $this->consumer)
+            ->build($this->topicKey, $this->consumerName)
             ->listen();
     }
 
@@ -71,8 +71,8 @@ class ConsumerFaker
         return new KafkaManager(new KafkaConsumer($this->topicName, $this->messages));
     }
 
-    public static function new(string $topicKey, string $consumer = 'default'): self
+    public static function new(string $topicKey, string $consumerName = 'default'): self
     {
-        return new self($topicKey, $consumer);
+        return new self($topicKey, $consumerName);
     }
 }

@@ -18,34 +18,34 @@ class ConsumerFactory
 
     /**
      * @param string $topicKey
-     * @param string $consumer
+     * @param string $consumerName
      * @return Consumer
      *
      * @throws KafkaConsumerProcessorException
      */
-    public function build(string $topicKey, string $consumer = 'default'): Consumer
+    public function build(string $topicKey, string $consumerName = 'default'): Consumer
     {
-        $processorData = $this->makeProcessorData($topicKey, $consumer);
-        $consumerOptions = $this->makeConsumerOptions($consumer, $processorData);
+        $processorData = $this->makeProcessorData($topicKey, $consumerName);
+        $consumerOptions = $this->makeConsumerOptions($consumerName, $processorData);
 
         return new Consumer(
             highLevelConsumer: $this->highLevelConsumer,
             processorData: $processorData,
             consumerOptions: $consumerOptions,
-            topicName: KafkaFacade::topicNameByClient('consumer', $consumer, $topicKey)
+            topicName: KafkaFacade::topicNameByClient('consumer', $consumerName, $topicKey)
         );
     }
 
     /**
      * @param string $topicKey
-     * @param string $consumer
+     * @param string $consumerName
      * @return ProcessorData
      *
      * @throws KafkaConsumerProcessorException
      */
-    protected function makeProcessorData(string $topicKey, string $consumer): ProcessorData
+    protected function makeProcessorData(string $topicKey, string $consumerName): ProcessorData
     {
-        $processorData = $this->findMatchedProcessor($topicKey, $consumer);
+        $processorData = $this->findMatchedProcessor($topicKey, $consumerName);
 
         if (!class_exists($processorData->class)) {
             throw new KafkaConsumerProcessorException("Processor class \"$processorData->class\" is not found");
@@ -61,22 +61,22 @@ class ConsumerFactory
 
     /**
      * @param string $topicKey
-     * @param string $consumer
+     * @param string $consumerName
      * @return ProcessorData
      *
      * @throws KafkaConsumerProcessorException
      */
-    protected function findMatchedProcessor(string $topicKey, string $consumer): ProcessorData
+    protected function findMatchedProcessor(string $topicKey, string $consumerName): ProcessorData
     {
         foreach (config('kafka-consumer.processors', []) as $processor) {
             $topicMatched = empty($processor['topic']) || $processor['topic'] === $topicKey;
-            $consumerMatched = empty($processor['consumer']) || $processor['consumer'] === $consumer;
+            $consumerMatched = empty($processor['consumer']) || $processor['consumer'] === $consumerName;
 
             if ($topicMatched && $consumerMatched) {
                 return new ProcessorData(
                     class: $processor['class'],
                     topicKey: $processor['topic'] ?? $topicKey,
-                    consumer: $processor['consumer'] ?? $consumer,
+                    consumer: $processor['consumer'] ?? $consumerName,
                     type: $processor['type'] ?? 'action',
                     queue: $processor['queue'] ?? false,
                     consumeTimeout: $processor['consume_timeout'] ?? 20000,
@@ -84,12 +84,12 @@ class ConsumerFactory
             }
         }
 
-        throw new KafkaConsumerProcessorException("Processor for topic-key \"$topicKey\" and consumer \"$consumer\" is not found");
+        throw new KafkaConsumerProcessorException("Processor for topic-key \"$topicKey\" and consumer \"$consumerName\" is not found");
     }
 
-    protected function makeConsumerOptions(string $consumer, ProcessorData $processorData): ConsumerOptions
+    protected function makeConsumerOptions(string $consumerName, ProcessorData $processorData): ConsumerOptions
     {
-        $consumerPackageOptions = config('kafka-consumer.consumer_options.' . $consumer, []);
+        $consumerPackageOptions = config('kafka-consumer.consumer_options.' . $consumerName, []);
 
         return new ConsumerOptions(
             consumeTimeout: $consumerPackageOptions['consume_timeout'] ?? $processorData->consumeTimeout,

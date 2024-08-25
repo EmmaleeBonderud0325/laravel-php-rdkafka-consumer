@@ -13,6 +13,6 @@ test('test create consumer logger from factory', function (?string $channel) {
         ->toBeInstanceOf(NullLogger::class)
         ->and($consumerLogger->getTopicKey())
         ->toBe('products')
-        ->and($consumerLogger->getConsumer())
+        ->and($consumerLogger->getConsumerName())
         ->toBe('default');
 })->with([null, 'null']);

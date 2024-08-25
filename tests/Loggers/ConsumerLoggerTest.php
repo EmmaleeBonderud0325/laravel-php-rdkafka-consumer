@@ -16,7 +16,7 @@ test('merging context when call log', function () {
             && $message === 'Test message'
             && count($context) == 3
             && $context['topic_key'] === 'products'
-            && $context['consumer'] === 'default'
+            && $context['consumer_name'] === 'default'
             && $context['foo'] == 'bar';
     });
 });

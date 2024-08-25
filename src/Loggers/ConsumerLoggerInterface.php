@@ -10,5 +10,5 @@ interface ConsumerLoggerInterface extends LoggerInterface
 
     public function getTopicKey(): string;
 
-    public function getConsumer(): string;
+    public function getConsumerName(): string;
 }

@@ -10,8 +10,8 @@ final class ConsumerLogger extends AbstractLogger implements ConsumerLoggerInter
 {
     public function __construct(
         protected LoggerInterface $logger,
-        protected string $topicKey,
-        protected string $consumer,
+        protected string          $topicKey,
+        protected string          $consumerName,
     ) {
     }
 
@@ -20,9 +20,9 @@ final class ConsumerLogger extends AbstractLogger implements ConsumerLoggerInter
         return $this->topicKey;
     }
 
-    public function getConsumer(): string
+    public function getConsumerName(): string
     {
-        return $this->consumer;
+        return $this->consumerName;
     }
 
     public function getLogger(): LoggerInterface
@@ -34,7 +34,7 @@ final class ConsumerLogger extends AbstractLogger implements ConsumerLoggerInter
     {
         $context = array_merge($context, [
             'topic_key' => $this->topicKey,
-            'consumer' => $this->consumer,
+            'consumer_name' => $this->consumerName,
         ]);
 
         $this->logger->log($level, $message, $context);
