@@ -33,9 +33,9 @@ test('consumer listen', function () {
 
     $consumer->listen();
 
-    expect($consumerOptions->maxEvents)
+    expect($consumer->getConsumerOptions()->maxEvents)
         ->toBe(10000)
-        ->and($consumerOptions->maxTime)
+        ->and($consumer->getConsumerOptions()->maxTime)
         ->toBe(5100);
 
     $highLevelConsumer->shouldHaveReceived('for', ['default']);

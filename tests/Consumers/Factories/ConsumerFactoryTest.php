@@ -23,3 +23,26 @@ test('get exception when processor invalid type', function () {
     (new ConsumerFactory(resolve(HighLevelConsumer::class)))
         ->build('test-models');
 })->throws(KafkaConsumerProcessorException::class, 'Invalid processor type "invalid-type", supported types are: action,job');
+
+test('set consume_timeout and middleware to consumer options', function () {
+    config()
+        ->set('kafka-consumer.consumer_options.default', [
+            'consume_timeout' => 55000,
+            'middleware' => ['AlreadyAddedMiddleware', 'KafkaConsumerMiddleware'],
+        ]);
+
+    config()
+        ->set('kafka-consumer.global_middleware', ['AlreadyAddedMiddleware']);
+
+    setConsumerTopicConfig('test-models', TestConsumer::class);
+
+    $consumer = (new ConsumerFactory(resolve(HighLevelConsumer::class)))
+        ->build('test-models');
+
+    $consumerOptions = $consumer->getConsumerOptions();
+
+    expect($consumerOptions->consumeTimeout)
+        ->toBe(55000)
+        ->and($consumerOptions->middleware)
+        ->toBe(['AlreadyAddedMiddleware', 'KafkaConsumerMiddleware']);
+});

@@ -99,11 +99,10 @@ class ConsumerFactory
 
     protected function collectMiddleware(array $processorMiddleware): array
     {
-        return array_unique(
-            array_merge(
-                config('kafka-consumer.global_middleware', []),
-                $processorMiddleware
-            )
-        );
+        return collect(config('kafka-consumer.global_middleware', []))
+            ->merge($processorMiddleware)
+            ->unique()
+            ->values()
+            ->toArray();
     }
 }

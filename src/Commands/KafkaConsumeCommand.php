@@ -84,15 +84,14 @@ class KafkaConsumeCommand extends Command implements SignalableCommandInterface
     {
         try {
             $this->consumer = $consumerFactory
-                ->build($this->getTopicKey(), $this->getConsumer());
+                ->build($this->getTopicKey(), $this->getConsumer())
+                ->setMaxEvents($this->getMaxEvents())
+                ->setMaxTime($this->getMaxTime());
 
             $this->info("Start listening to topic: \"{$this->getTopicKey()}\"" .
                 " ({$this->consumer->getTopicName()}), consumer \"{$this->getConsumer()}\"");
 
-            $this->consumer
-                ->setMaxEvents($this->getMaxEvents())
-                ->setMaxTime($this->getMaxTime())
-                ->listen();
+            $this->consumer->listen();
         } catch (Throwable $exception) {
             $this->errorThrowable($exception);
 
