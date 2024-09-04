@@ -7,7 +7,6 @@ use Ensi\LaravelPhpRdKafkaConsumer\Tests\Consumer\Topics\Metadata;
 use Ensi\LaravelPhpRdKafkaConsumer\Tests\Consumer\Topics\Topic;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer as BaseKafkaConsumer;
-use RdKafka\TopicConf;
 
 class KafkaConsumer extends BaseKafkaConsumer
 {
@@ -41,11 +40,6 @@ class KafkaConsumer extends BaseKafkaConsumer
     }
 
     /**
-     * @param $all_topics
-     * @param $only_topic
-     * @param $timeout_ms
-     * @return Metadata
-     *
      * @phpstan-ignore-next-line
      */
     public function getMetadata($all_topics, $only_topic = null, $timeout_ms): Metadata
@@ -59,10 +53,6 @@ class KafkaConsumer extends BaseKafkaConsumer
     }
 
     /**
-     * @param $topic_name
-     * @param TopicConf|null $topic_conf
-     * @return Topic
-     *
      * @phpstan-ignore-next-line
      */
     public function newTopic($topic_name, $topic_conf = null): Topic

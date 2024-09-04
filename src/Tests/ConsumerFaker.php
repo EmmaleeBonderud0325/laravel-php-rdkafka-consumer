@@ -40,8 +40,6 @@ class ConsumerFaker
     }
 
     /**
-     * @return void
-     *
      * @throws KafkaConsumerProcessorException
      * @throws Throwable
      */

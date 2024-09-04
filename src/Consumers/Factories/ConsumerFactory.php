@@ -17,10 +17,6 @@ class ConsumerFactory
     }
 
     /**
-     * @param string $topicKey
-     * @param string $consumerName
-     * @return Consumer
-     *
      * @throws KafkaConsumerProcessorException
      */
     public function build(string $topicKey, string $consumerName = 'default'): Consumer
@@ -37,10 +33,6 @@ class ConsumerFactory
     }
 
     /**
-     * @param string $topicKey
-     * @param string $consumerName
-     * @return ProcessorData
-     *
      * @throws KafkaConsumerProcessorException
      */
     protected function makeProcessorData(string $topicKey, string $consumerName): ProcessorData
@@ -60,10 +52,6 @@ class ConsumerFactory
     }
 
     /**
-     * @param string $topicKey
-     * @param string $consumerName
-     * @return ProcessorData
-     *
      * @throws KafkaConsumerProcessorException
      */
     protected function findMatchedProcessor(string $topicKey, string $consumerName): ProcessorData

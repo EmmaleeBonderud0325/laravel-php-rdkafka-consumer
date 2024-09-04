@@ -81,6 +81,7 @@ class HighLevelConsumer
                 }
             }
         } catch (KafkaConsumerMessagedEndedException) {
+            // Called only during testing to stop reading Consumer
         }
     }
 

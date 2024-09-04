@@ -42,25 +42,17 @@ class Consumer
         $this->highLevelConsumer->forceStop();
     }
 
-    /**
-     * @return ProcessorData
-     */
     public function getProcessorData(): ProcessorData
     {
         return $this->processorData;
     }
 
-    /**
-     * @return ConsumerOptions
-     */
     public function getConsumerOptions(): ConsumerOptions
     {
         return $this->consumerOptions;
     }
 
     /**
-     * @return void
-     *
      * @throws Exception
      * @throws Throwable
      */

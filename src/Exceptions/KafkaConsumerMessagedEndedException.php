@@ -4,6 +4,6 @@ namespace Ensi\LaravelPhpRdKafkaConsumer\Exceptions;
 
 use Exception;
 
-class KafkaConsumerMessagedEndedException extends Exception
+final class KafkaConsumerMessagedEndedException extends Exception
 {
 }
