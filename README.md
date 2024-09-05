@@ -156,6 +156,24 @@ You can use any of the constants defined by the pcntl extension https://www.php.
 
 Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
+## Consumer faking
+
+Testing tools have been added to test the developed handlers. You can create a fake 
+Consumer and call the topic listening command:
+
+```php
+use Ensi\LaravelPhpRdKafkaConsumer\Commands\KafkaConsumeCommand;
+use Ensi\LaravelPhpRdKafkaConsumer\Tests\ConsumerFaker;
+use RdKafka\Message;
+
+ConsumerFaker::new('test-model')
+    ->addMessage(new Message())
+    ->addMessage(new Message())
+    ->consume();
+```
+
+## Testing
+
 ### Testing
 
 1. composer install

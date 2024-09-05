@@ -4,6 +4,7 @@ namespace Ensi\LaravelPhpRdKafkaConsumer;
 
 use Ensi\LaravelPhpRdKafka\KafkaManager;
 use Ensi\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerException;
+use Ensi\LaravelPhpRdKafkaConsumer\Exceptions\KafkaConsumerMessagedEndedException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Pipeline\Pipeline;
 use RdKafka\Exception as RdKafkaException;
@@ -43,6 +44,8 @@ class HighLevelConsumer
     /**
      * @throws RdKafkaException
      * @throws Throwable
+     *
+     * @noinspection PhpRedundantCatchClauseInspection
      */
     public function listen(string $topicName, ProcessorData $processorData, ConsumerOptions $options): void
     {
@@ -50,31 +53,35 @@ class HighLevelConsumer
 
         [$startTime, $eventsProcessed] = [hrtime(true) / 1e9, 0];
 
-        while (true) {
-            $message = $this->consumer->consume($options->consumeTimeout);
+        try {
+            while (true) {
+                $message = $this->consumer->consume($options->consumeTimeout);
 
-            switch ($message->err) {
+                switch ($message->err) {
 
-                case RD_KAFKA_RESP_ERR_NO_ERROR:
-                    $this->processThroughMiddleware($processorData, $message, $options);
-                    $this->consumer->commitAsync($message);
-                    $eventsProcessed++;
+                    case RD_KAFKA_RESP_ERR_NO_ERROR:
+                        $this->processThroughMiddleware($processorData, $message, $options);
+                        $this->consumer->commitAsync($message);
+                        $eventsProcessed++;
 
+                        break;
+
+                    case RD_KAFKA_RESP_ERR__TIMED_OUT:
+                        // This also happens when there is no new messages in the topic after the specified timeout: https://github.com/arnaud-lb/php-rdkafka/issues/343
+                        // We cannot differentiate broker timeout, poll timeout and eof timeout and are forced to keep on polling as a result.
+                        // When kafka broker goes back online the connection will mostly likely be reestablished.
+                        break;
+
+                    default:
+                        throw new KafkaConsumerException('Kafka error: ' . $message->errstr());
+                }
+
+                if ($this->shouldBeStopped($startTime, $eventsProcessed, $options)) {
                     break;
-
-                case RD_KAFKA_RESP_ERR__TIMED_OUT:
-                    // This also happens when there is no new messages in the topic after the specified timeout: https://github.com/arnaud-lb/php-rdkafka/issues/343
-                    // We cannot differentiate broker timeout, poll timeout and eof timeout and are forced to keep on polling as a result.
-                    // When kafka broker goes back online the connection will mostly likely be reestablished.
-                    break;
-
-                default:
-                    throw new KafkaConsumerException('Kafka error: ' . $message->errstr());
+                }
             }
-
-            if ($this->shouldBeStopped($startTime, $eventsProcessed, $options)) {
-                break;
-            }
+        } catch (KafkaConsumerMessagedEndedException) {
+            // Called only during testing to stop reading Consumer
         }
     }
 
